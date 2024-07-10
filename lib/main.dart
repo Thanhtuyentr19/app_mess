@@ -1,12 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:chatview/chatview.dart' as chatview;
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  if (Platform.isIOS) {
+    await Firebase.initializeApp(
+      options: FirebaseOptions(
+        apiKey: "AIzaSyBsEnsitAk_PJhHJja7645hwK1nNODzUSQ",
+        appId: "1:731312504025:ios:a36060defc4816589c52c8",
+        messagingSenderId: "731312504025",
+        projectId: "chat-app-b0a8e",
+      ),
+    );
+  } else {
+    await Firebase.initializeApp();
+  }
+  runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class User {
+  final String name;
+  final int age;
+  final String? avatar;
+
+  User({
+    required this.name,
+    required this.age,
+    this.avatar,
+    });
+
+  //fromMap
+  User.fromMap(Map<String, dynamic> map)
+      : name = map['name'],
+        avatar = map['avatar'],
+        age = map['age'];
+        @override
+  String toString() {
+    return 'User{name: $name, age: $age}';
+  }
+}
+class MyApp extends StatefulWidget {
+  MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  
 
   @override
   Widget build(BuildContext context) {
@@ -31,11 +75,30 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int currentIndex = 0;
-  List<ChatUser> friends = [
-    ChatUser(id: '1', name: 'Thanh Tuyền', profilePic: 'https://random.imagecdn.app/200/300'),
-    ChatUser(id: '2', name: 'Yen Nhi', profilePic: 'https://picsum.photos/200/300'),
-    ChatUser(id: '3', name: 'Ty tyn', profilePic: 'https://picsum.photos/seed/picsum/200/300'),
-  ];
+  // List<ChatUser> friends = [
+  //   ChatUser(id: '1', name: 'Thanh Tuyền', profilePic: 'https://random.imagecdn.app/200/300'),
+  //   ChatUser(id: '2', name: 'Yen Nhi', profilePic: 'https://picsum.photos/200/300'),
+  //   ChatUser(id: '3', name: 'Ty tyn', profilePic: 'https://picsum.photos/seed/picsum/200/300'),
+  // ];
+  List<User> users = [];
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() async {
+      // listen realtime
+      FirebaseFirestore.instance
+          .collection("users")
+          .snapshots()
+          .listen((event) {
+        final users = event.docs.map((e) => User.fromMap(e.data())).toList();
+        print(users);
+        setState(() {
+          this.users = users;
+        });
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +117,7 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: friends.length + 1,
+              itemCount: users.length,
               itemBuilder: (context, index) {
                 if (index == 0) {
                   return Container(
@@ -66,12 +129,12 @@ class _HomePageState extends State<HomePage> {
                     ),
                   );
                 } else {
-                  final friend = friends[index - 1];
+                  final friend = users[index - 1];
                   return Container(
                     margin: const EdgeInsets.symmetric(horizontal: 10),
                     child: CircleAvatar(
                       radius: 30,
-                      backgroundImage: NetworkImage(friend.profilePic),
+                      backgroundImage: NetworkImage(friend.avatar??''),
                     ),
                   );
                 }
@@ -80,9 +143,9 @@ class _HomePageState extends State<HomePage> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: friends.length,
+              itemCount: users.length,
               itemBuilder: (context, index) {
-                final friend = friends[index];
+                final friend = users[index + 1 ];
                 return InkWell(
                   onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) {
@@ -98,7 +161,7 @@ class _HomePageState extends State<HomePage> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(50),
                           child: CircleAvatar(
-                            backgroundImage: NetworkImage(friend.profilePic),
+                            backgroundImage: NetworkImage(friend.avatar??''),
                             radius: 30,
                           ),
                         ),
@@ -168,7 +231,7 @@ class _HomePageState extends State<HomePage> {
 }
 
 class MessengerScreen extends StatefulWidget {
-  final ChatUser friend;
+  final User friend;
 
   MessengerScreen({required this.friend});
 
@@ -186,7 +249,7 @@ class _MessengerScreenState extends State<MessengerScreen> {
     initialMessageList: messageList,
     scrollController: ScrollController(),
     currentUser: chatview.ChatUser(id: '1', name: 'Ty Tyn', profilePhoto: ''),
-    otherUsers: [chatview.ChatUser(id: widget.friend.id, name: widget.friend.name, profilePhoto: widget.friend.profilePic)],
+    otherUsers: [chatview.ChatUser(id: '2', name: widget.friend.name, profilePhoto: widget.friend.avatar)],
   );
 
   @override
