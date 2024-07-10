@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:chatview/chatview.dart';
 
-
 void main() {
   runApp(const MyApp());
 }
@@ -16,10 +15,6 @@ class MyApp extends StatelessWidget {
       home: MyHomePage(),
     );
   }
-}
-class MyHomePage extends StatefulWidget {
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -45,49 +40,20 @@ class _MyHomePageState extends State<MyHomePage> {
                 backgroundColor: Colors.white,
                 child: Text('U'),
               ),
-              title: Text('User $index'),
-              subtitle: Text('Message $index'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MessengerScreen(userName: 'User $index'),
-                  ),
-                );
-              },
-            );
-          },
+            ),
+          );
+        },
         ),
-      )
     );
   }
 }
 
-class Message_app {
-  final String userAvatarUrl;
-  final String userName;
-  final String messageContent;
-  final String timestamp;
-
-  Message_app({
-    required this.userAvatarUrl,
-    required this.userName,
-    required this.messageContent,
-    required this.timestamp,
-  });
-}
-
 class MessengerScreen extends StatefulWidget {
-  final String userName;
-
-  MessengerScreen({required this.userName});
-
   @override
   State<MessengerScreen> createState() => _MessengerScreenState();
 }
 
 class _MessengerScreenState extends State<MessengerScreen> {
-  int currentIndex = 0;
   var messageList = [
     Message(message: 'Hello', createdAt: DateTime.now(), sentBy: '1'),
     Message(message: 'Hi', createdAt: DateTime.now(), sentBy: '2'),
@@ -158,34 +124,6 @@ class _MessengerScreenState extends State<MessengerScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget buildConversationTile(
-      String name, String message, String time, String imageUrl) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundImage: NetworkImage(imageUrl),
-      ),
-      title: Text(
-        name,
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: Text(
-        message,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      trailing: SizedBox(
-        width: 50,
-        child: Text(
-          time,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-      onTap: () {},
     );
   }
 }
